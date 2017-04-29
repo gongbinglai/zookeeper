@@ -2,7 +2,11 @@ package com.jd.zk;
 
 import java.util.List;
 
+import org.I0Itec.zkclient.IZkChildListener;
+import org.I0Itec.zkclient.IZkDataListener;
+import org.I0Itec.zkclient.IZkStateListener;
 import org.I0Itec.zkclient.ZkClient;
+import org.apache.zookeeper.Watcher.Event.KeeperState;
 import org.junit.Test;
 
 public class ZkTest {
@@ -53,7 +57,7 @@ public class ZkTest {
 		zkClient.delete("/createPersistent");
 		
 		//删除节点
-		zkClient.deleteRecursive("/zookeeper");
+		//zkClient.deleteRecursive("/zookeeper");
 	}
 	
 	@Test
@@ -104,11 +108,7 @@ public class ZkTest {
 	}
 	
 	
-	
-	
-	
-	
-	
+
 	@Test
 	public void updateNode(){
 		
@@ -116,4 +116,98 @@ public class ZkTest {
 	}
 	
 	
+	
+
+	@Test
+	public void handleDataChange(){
+		
+		zkClient.subscribeDataChanges("/createPersistent", new IZkDataListener(){
+
+			public void handleDataChange(String dataPath, Object data)
+					throws Exception {
+				
+				System.out.println(dataPath+" 对应的新值："+data);
+			}
+
+			public void handleDataDeleted(String dataPath) throws Exception {
+				System.out.println(dataPath+" 删除了");
+			}
+			
+		} );
+		
+		
+		
+		
+		try {
+			Thread.sleep(1000000000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}	
+	}
+	
+	
+	@Test
+	public void subscribeStateChanges(){
+		
+		zkClient.subscribeStateChanges(new IZkStateListener(){
+
+			public void handleStateChanged(KeeperState state) throws Exception {
+				String stateStr = null;
+				switch (state) {
+					case Disconnected:
+						stateStr = "Disconnected";
+						break;
+					case Expired:
+						stateStr = "Expired";
+						break;
+					case NoSyncConnected:
+						stateStr = "NoSyncConnected";
+						break;
+					case SyncConnected:
+						stateStr = "SyncConnected";
+						break;
+					case Unknown:
+					default:
+						stateStr = "Unknow";
+						break;
+				}
+				System.out.println("[Callback]State changed to [" + stateStr + "]");
+			}
+
+			public void handleNewSession() throws Exception {
+				
+				System.out.println("[Callback]New session created..");
+			}
+			
+		});
+		
+		
+		
+		
+		try {
+			Thread.sleep(1000000000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}	
+	}
+	
+	@Test
+	public void subscribeChildChanges(){
+		
+
+		zkClient.subscribeChildChanges("/", new IZkChildListener(){
+
+			public void handleChildChange(String parentPath,
+					List<String> currentChilds) throws Exception {
+				
+			}
+			
+		});
+		
+		try {
+			Thread.sleep(1000000000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}	
+	}
 }
